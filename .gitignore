@@ -25,6 +25,7 @@ build/
 *.tmp
 *.swp
 *.DS_Store
+*.pem
 
 # Vcpkg specific
 .vcpkg/
