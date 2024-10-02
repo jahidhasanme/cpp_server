@@ -1,0 +1,32 @@
+# CMake files
+CMakeFiles/
+CMakeCache.txt
+*.cmake
+build/
+*.cbp
+*.sln
+*.vcxproj*
+*.Xcode*
+
+# Compiled object files and executables
+*.o
+*.obj
+*.exe
+*.out
+*.app
+*.lib
+*.a
+*.dll
+*.so
+*.dylib
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+*.DS_Store
+
+# Vcpkg specific
+.vcpkg/
+vcpkg_installed/
+installed/

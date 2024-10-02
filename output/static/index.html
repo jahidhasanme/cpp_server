@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebSocket Chat Application</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
+      <h1 class="text-2xl font-bold text-center mb-4">
+        WebSocket Chat Application
+      </h1>
+
+      <div id="login" class="mb-4">
+        <h2 class="text-xl font-semibold">Login</h2>
+        <input
+          id="login_username"
+          placeholder="Username"
+          class="w-full p-2 border border-gray-300 rounded mb-2"
+        />
+        <input
+          id="login_password"
+          type="password"
+          placeholder="Password"
+          class="w-full p-2 border border-gray-300 rounded mb-4"
+        />
+        <button
+          id="login_button"
+          class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+        >
+          Login
+        </button>
+        <p id="login_status" class="text-red-500 text-sm mt-2"></p>
+      </div>
+
+      <div id="register" class="mb-4">
+        <h2 class="text-xl font-semibold">Register</h2>
+        <input
+          id="register_username"
+          placeholder="Username"
+          class="w-full p-2 border border-gray-300 rounded mb-2"
+        />
+        <input
+          id="register_password"
+          type="password"
+          placeholder="Password"
+          class="w-full p-2 border border-gray-300 rounded mb-4"
+        />
+        <button
+          id="register_button"
+          class="w-full bg-green-500 text-white p-2 rounded hover:bg-green-600"
+        >
+          Register
+        </button>
+        <p id="register_status" class="text-red-500 text-sm mt-2"></p>
+      </div>
+
+      <div id="chat_container" style="display: none">
+        <div
+          id="chat"
+          class="h-64 border border-gray-300 rounded overflow-y-auto p-2 mb-4 bg-gray-50"
+        ></div>
+        <input
+          id="recipient"
+          placeholder="Recipient (for private chat)"
+          class="w-full p-2 border border-gray-300 rounded mb-2"
+        />
+        <input
+          id="message"
+          placeholder="Type a message"
+          class="w-full p-2 border border-gray-300 rounded mb-2"
+        />
+        <div class="flex">
+          <button
+            id="send"
+            class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 w-full mr-2"
+          >
+            Send
+          </button>
+          <button
+            id="logout"
+            class="bg-red-500 text-white p-2 rounded hover:bg-red-600"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const chat = document.getElementById("chat");
+      const messageInput = document.getElementById("message");
+      const sendButton = document.getElementById("send");
+      const recipientInput = document.getElementById("recipient");
+      const loginDiv = document.getElementById("login");
+      const registerDiv = document.getElementById("register");
+      const chatContainer = document.getElementById("chat_container");
+      const loginButton = document.getElementById("login_button");
+      const registerButton = document.getElementById("register_button");
+      const logoutButton = document.getElementById("logout");
+
+      const ws = new WebSocket("ws://localhost:9002");
+
+      ws.onopen = function () {
+        console.log("Connected to WebSocket server");
+        loginDiv.style.display = "block";
+        registerDiv.style.display = "block";
+      };
+
+      ws.addEventListener("message", function (event) {
+        const msg = JSON.parse(event.data);
+        if (msg.type === "welcome") {
+          chatContainer.style.display = "block";
+          loginDiv.style.display = "none";
+          registerDiv.style.display = "none";
+        } else if (msg.type === "error") {
+          loginStatus.textContent = msg.message;
+        } else if (msg.type === "registration_error") {
+          registerStatus.textContent = msg.message;
+        }
+      });
+
+      ws.onmessage = function (event) {
+        console.log(event);
+        const msg = event.data;
+        const newMessage = document.createElement("div");
+        newMessage.textContent = msg;
+        newMessage.className = "text-gray-700 mb-1";
+        chat.appendChild(newMessage);
+        chat.scrollTop = chat.scrollHeight;
+      };
+
+      loginButton.onclick = function () {
+        const username = document.getElementById("login_username").value;
+        const password = document.getElementById("login_password").value;
+        const message = {
+          action: "login",
+          username: username,
+          password: password,
+        };
+        ws.send(JSON.stringify(message));
+      };
+
+      registerButton.onclick = function () {
+        const username = document.getElementById("register_username").value;
+        const password = document.getElementById("register_password").value;
+        const message = {
+          action: "register",
+          username: username,
+          password: password,
+        };
+        ws.send(JSON.stringify(message));
+      };
+
+      sendButton.onclick = function () {
+        const messageText = messageInput.value;
+        const recipient = recipientInput.value;
+        if (messageText) {
+          const message = {
+            action: "send_message",
+            recipient: recipient,
+            text: messageText,
+          };
+          ws.send(JSON.stringify(message));
+          messageInput.value = "";
+        }
+      };
+
+      logoutButton.onclick = function () {
+        ws.close();
+        chatContainer.style.display = "none";
+        loginDiv.style.display = "block";
+        registerDiv.style.display = "block";
+      };
+
+      messageInput.addEventListener("keypress", function (event) {
+        if (event.key === "Enter") {
+          sendButton.click();
+        }
+      });
+    </script>
+  </body>
+</html>
