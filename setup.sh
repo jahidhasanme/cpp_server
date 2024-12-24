@@ -23,6 +23,9 @@ echo "Bootstrapping vcpkg..."
 ./bootstrap-vcpkg.sh
 
 # Install libraries
+echo "Installing boost:x64-linux..."
+./vcpkg install boost:x64-linux
+
 echo "Installing websocketpp:x64-linux..."
 ./vcpkg install websocketpp:x64-linux
 
